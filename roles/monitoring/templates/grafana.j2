@@ -1,0 +1,41 @@
+server {
+        listen          *80 http2;
+        server_name     {{ grafana_domain }};
+
+        access_log      /var/log/nginx/files-dev.web.access.log;
+        error_log       /var/log/nginx/files-dev.web.error.log;
+
+#        ssl_certificate        /etc/nginx/ssl/;
+#        ssl_certificate_key    /etc/nginx/ssl/;
+
+
+        ssl_protocols TLSv1.1 TLSv1.2;
+        ssl_ciphers EECDH+CHACHA20:EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5;
+        ssl_prefer_server_ciphers on;
+        ssl_session_cache shared:SSL:1m;
+        ssl_session_timeout 1h;
+        ssl_session_tickets off;
+        ssl_buffer_size 4k;
+
+
+        gzip            on;
+        gzip_static     on;
+        gzip_comp_level 6;
+        gzip_disable    "MSIE [1-6]\.(?!.*SV1)";
+        gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+
+        location ~ /\.git {
+        deny all;
+        }
+
+        location / {
+                proxy_pass              http://monitoring;
+                proxy_set_header        Host $host;
+                proxy_set_header        X-Real-IP $remote_addr;
+                proxy_http_version      1.1;
+                proxy_set_header        X-Forwarded-Host        $host;
+                proxy_set_header        X-Forwarded-Server      $host;
+                proxy_set_header        X-Forwarded-For         $proxy_add_x_forwarded_for;
+                
+        }
+}

@@ -1,0 +1,23 @@
+---
+users:
+  - username: example1
+    use_sudo: true
+    uid: 1519
+    active: False
+    admin: true
+
+  - username: example2
+    use_sudo: false
+    uid: 1520
+    active: False #Set False to remove users from remote server.
+    admin: false
+
+#root_pass: !vault |
+#          $ANSIBLE_VAULT;1.1;AES256
+#          32643331663532313635653336316138353163653634346239646561663234333135396465306131
+#          6661376533383133613334636561363763393934616437610a363662353064356630323565666131
+#          63326266353061633062626565356462643461306136353036626332336264323439613632653231
+#          3630303139333261650a643464306138306433633534343761623230396562323533306131666663
+#          3538
+
+random_pass: "{{ lookup('password', '/dev/null length=15 chars=ascii_letters') }}"

@@ -1,0 +1,23 @@
+---
+- name: fail2ban start
+  service: name=fail2ban state=started
+
+- name: fail2ban reload
+  service: name=fail2ban state=reloaded
+
+- name: Start Nginx
+  service: name=nginx state=started
+
+- name: Nginx syntax check
+  command: /usr/sbin/nginx -t
+  register: nginx_config_syntax
+  failed_when: "nginx_config_syntax.stdout.find('failed') != -1"
+
+- name: nginx conf fail msg
+  debug: msg="nginx config failed"
+  when: nginx_config_syntax | failed
+
+- name: nginx reload
+  service: name=nginx state=reloaded
+  when: nginx_config_syntax | success
+

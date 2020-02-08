@@ -1,0 +1,17 @@
+---
+
+monitoring_server:
+     prometheus: true
+
+admin_access: false
+
+passwd_login:
+    enabled: false
+
+#Infrastructure services domains:
+
+frontend_domain: www.google.com
+grafana_domain: monitoring.myproject.io
+prometheus_domain: prom.myproject.io
+
+

@@ -1,0 +1,8 @@
+---
+
+- name: Default service installation
+  include: services.yml
+
+- name: Users creation
+  include: users.yml
+

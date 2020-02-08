@@ -1,0 +1,8 @@
+---
+monitoring_server:
+     prometheus: true
+
+admin_access: false
+
+passwd_login:
+    enabled: true

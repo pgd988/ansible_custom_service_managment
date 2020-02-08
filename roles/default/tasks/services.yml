@@ -1,0 +1,55 @@
+---
+
+- name: Password auth turning on
+  lineinfile: 
+    path: /etc/ssh/sshd_config
+    regexp: '^PasswordAuthentication'
+    insertafter: '^#PasswordAuthentication'
+    line: 'PasswordAuthentication yes'
+    state: present
+    create: true
+  when: ( passwd_login.enabled == True )
+
+- name: Root login switching off
+  lineinfile: 
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    insertafter: '^#PermitRootLogin'
+    line: 'PermitRootLogin prohibit-password' ## Disable root login by password auth
+    state: present
+    create: true
+
+- name: Install fail2ban daemon
+  package: pkg=fail2ban state=installed
+  become: true
+  when: ( passwd_login.enabled == True )
+
+- name: Send the fail2ban config
+  copy: 
+   src: roles/default/files/jail.conf_distr 
+   dest: /etc/fail2ban/jail.conf
+   owner: root
+   group: root
+   mode: 0644
+  notify: 
+  - fail2ban reload
+  when: ( passwd_login.enabled == True )
+
+- name: fail2ban starting check
+  service: name=fail2ban state=started
+  when: ( passwd_login.enabled == True )
+
+- name: Prometheus exporter install
+  package: pkg={{ item }} state=installed 
+  with_items:
+    - prometheus-node-exporter
+  when: (monitoring_server.prometheus == true)
+
+- name: Additional App install
+  package: pkg={{ item }} state=installed 
+  with_items:
+    - vim
+    - wget
+    - curl
+    - git
+

@@ -1,0 +1,18 @@
+
+Instance_auto_deploy:
+    enabled: true
+######################
+group_name: SW
+
+instance_type: t2.micro
+image:
+instance_count: 1
+
+ec2_key:
+vpc_subnet: default
+
+#Don't Enable This Option If You Don't Want To DELTE ALL YOUR INSTANCES!
+#It's For Tests ONLY!
+######################
+#terminate_all: false
+######################

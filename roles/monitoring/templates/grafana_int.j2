@@ -1,0 +1,13 @@
+server {
+    listen                      8083;
+    server_name                 {{ grafana_domain }};
+    location / {
+        auth_basic           "Restricted Area";
+        auth_basic_user_file ./.htaccess;
+        proxy_set_header        Host $http_host;
+        proxy_set_header        X-Forwarded-Host $host;
+        proxy_set_header        X-Forwarded-Server $host;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass              http://grafana:3000;
+    }
+}

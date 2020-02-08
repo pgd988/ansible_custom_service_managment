@@ -1,0 +1,37 @@
+---
+- include_vars: roles/default/vars/users_list.yaml
+
+#- name: DEBUG 
+#  debug:
+#    msg: "Root Pwd is: {{ root_pass }} and Random Pwd is: {{ random_pass }}"
+
+#- name: Change root password
+#  user: name=root password={{ root_pass }}
+#  become: yes
+
+- name: User creation with home dir, shell and groups adding
+  user: name={{ item.username }} shell=/bin/bash uid={{ item.uid }} createhome=yes password={{ random_pass }} comment="" state=present
+  with_items: '{{ users }}'
+  when: ( item.active == True and item.admin !== True )
+
+- name: User creation with home dir, shell and groups adding
+  user: name={{ item.username }} shell=/bin/bash uid={{ item.uid }} createhome=yes password={{ random_pass }} comment="" state=present group="sudo"
+  with_items: '{{ users }}'
+  when: ( item.active == True and item.admin == True )
+
+- name: Pub_key storage directory creation
+  file:
+    path: '/home/{{ item.username }}/.ssh'
+    state: directory
+    mode: 0700
+  state: present
+  with_items: '{{ users }}'
+  when: ( item.active == True )
+
+- name: Auth key adding
+  authorized_key: user={{ item.username }}
+   key="{{ lookup('file', 'roles/default/files/pub_keys/{{ item.username }}.pub') }}"
+  state: present
+  with_items: '{{ users }}'
+  when: ( item.active == True )
+

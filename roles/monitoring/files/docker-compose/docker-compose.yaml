@@ -1,0 +1,64 @@
+version: '3'
+networks:
+  prom:
+    driver: bridge
+
+services:
+  nginx:
+    image: gcr.io/deep-wares-144610/nginx:latest
+    hostname: nginx
+    volumes:
+    - /opt/config/nginx/ssl:/etc/nginx/ssl
+    - /opt/config/nginx/sites:/etc/nginx/sites
+    - /opt/config/nginx/nginx.conf:/etc/nginx/nginx.conf
+    - /var/log/nginx:/var/log/nginx/
+    - /etc/timezone:/etc/timezone:ro
+    ports:
+    - "127.0.0.1:8083:8083"
+    networks:
+      - prom
+    restart: always
+    depends_on:
+    - grafana
+    - prometheus
+
+  prometheus:
+    image: prom/prometheus:v2.15.2
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - /opt/data/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    depends_on:
+      - blackbox-exporter
+    networks:
+      - prom
+    restart: always
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    volumes:
+      - ./blackbox-exporter/:/etc/blackbox-exporter/
+      - /opt/data/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/blackbox-exporter/config.yml'
+    restart: always
+    networks:
+      - prom
+
+  grafana:
+    image: grafana/grafana:6.6.1
+    depends_on:
+      - prometheus
+    volumes:
+      - /opt/data/grafana:/var/lib/grafana
+      - ./grafana/:/etc/grafana/
+    env_file:
+      - ./grafana/config.monitoring
+    user: "104"
+    restart: always
+    networks:
+    - prom

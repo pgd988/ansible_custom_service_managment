@@ -1,0 +1,29 @@
+# This file is part of the fail2ban-firewalld package to configure the use of
+# the firewalld actions as the default actions.  You can remove this package
+# (along with the empty fail2ban meta-package) if you do not use firewalld
+[DEFAULT]
+ignoreip = 127.0.0.1
+bantime = 300
+maxretry = 6
+backend = systemd
+destemail = admin@yourdomain.ru
+banaction = iptables-multiport
+protocol = tcp
+
+# Choose default action. To change, just override value of 'action' with the
+# interpolation to the chosen action shortcut (e.g. action_mw, action_mwl, etc) in jail.local
+# globally (section [DEFAULT]) or per specific section
+
+#banaction = %(action_)s
+
+[sshd]
+
+enabled = true
+port    = ssh
+filter  = sshd
+logpath = /var/log/secure
+maxretry = 6
+action = iptables-multiport
+
+
+##eof

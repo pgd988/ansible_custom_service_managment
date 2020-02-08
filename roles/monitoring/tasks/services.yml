@@ -1,0 +1,118 @@
+---
+- name: Run "apt-get update"
+  apt:
+    update_cache: yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: Run "yum update"
+  yum: name=* state=latest
+  when: ansible_distribution == "CentOS"
+
+- name: Install fail2ban daemon
+  package: pkg=fail2ban state=installed
+  become: true
+  when: ( passwd_login.enabled == True )
+
+- name: Send the fail2ban config
+  copy: 
+   src: roles/default/files/jail.conf_distr 
+   dest: /etc/fail2ban/jail.conf
+   owner: root
+   group: root
+   mode: 0644
+  notify: 
+  - fail2ban reload
+  when: ( passwd_login.enabled == True )
+
+- name: fail2ban starting check
+  service: name=fail2ban state=started
+  when: ( passwd_login.enabled == True )
+
+- name: Prometheus exporter install
+  package: pkg={{ item }} state=installed 
+  with_items:
+    - prometheus-node-exporter
+  when: (monitoring_server.prometheus == true)
+
+- name: Nginx install
+  package: pkg={{ item }} state=installed 
+  with_items:
+    - nginx
+    - nginx-extras
+
+- name: Docker Install
+  package: pkg={{ item }} state=installed 
+  with_items:
+    - docker.io
+    - docker-compose
+
+- name: Additional App install
+  package: pkg={{ item }} state=installed 
+  with_items:
+    - vim
+    - wget
+    - curl
+    - git
+
+- name: Directory for docker-compose servies data creation
+  file:
+    path: "/opt/{{ item }}"
+    state: directory
+  with_items:
+    - data/prometheus
+    - data/grafana
+    - config/nginx/sites
+    - data/blackbox
+
+- name: Docker-compose nginx sites configs installation
+  template:
+    src: "{{ item }}.j2"
+    dest: "/opt/config/nginx/sites/{{ item }}.conf"
+    owner: root
+    group: root
+  with_items:
+    - prometheus_int
+    - grafana_int
+
+- name: Nginx config installation
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/nginx/{{ item }}.conf"
+    owner: nginx
+    group: nginx
+  with_items:
+    - nginx
+
+- name: Docker-compose config installation
+  copy: src=docker-compose/docker-compose.yaml dest=/opt/config/docker-compose.yaml
+
+- name: Prometheus main config installation
+  copy: src=docker-compose/prometheus/prometheus.yaml dest=/opt/config/prometheus/prometheus.yaml
+
+- name: Configuring Prometheus services
+  template: src={{ item  }}.j2  dest=/opt/config/prometheus/{{ item }}.yaml owner=root group=root
+  with_items:
+    - blackbox-targets
+
+- name: Configuring Grafana services
+  template: src={{ item  }}.j2  dest=/opt/config/grafana/{{ item }}.yaml owner=root group=root
+  with_items:
+    - config.monitoring
+
+- name: Grafana main config installation
+  copy: src=docker-compose/grafana/grafana.ini dest=/opt/config/grafana/grafana.ini
+
+- name: Docker-compose starting
+      docker_compose:
+        project_src: /opt/config/
+        build: no
+
+- name: Configuring Nginx services
+  template: src={{ item  }}.j2  dest=/etc/nginx/sites-enabled/{{ item }}.conf owner=nginx group=nginx
+  with_items:
+    - prometheus
+    - grafana
+  notify:
+      - Nginx syntax check
+      - nginx conf fail msg
+      - nginx reload
