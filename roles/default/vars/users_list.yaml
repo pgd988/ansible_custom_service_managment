@@ -10,6 +10,10 @@ users:
     uid: 1520
     active: False #Set False to remove users from remote server.
 
+  - username: ci_user
+    use_sudo: true
+    uid: 1521
+    active: True
 #root_pass: !vault |
 #          $ANSIBLE_VAULT;1.1;AES256
 #          32643331663532313635653336316138353163653634346239646561663234333135396465306131

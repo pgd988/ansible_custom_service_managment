@@ -57,7 +57,7 @@ To fully automate deployments with the included `.gitlab-ci.yml`, you must secur
    ssh-keygen -t ed25519 -C "gitlab-ci" -f ci_ssh_key
    ```
 2. **Provision the public key (Do this before running playbooks manually):**
-   Rename the generated `ci_ssh_key.pub` to `ci_user.pub`, place it into `roles/default/files/pub_keys/ci_user.pub`, and add the `ci_user` account to your `users_list.yaml`. Then, run the playbooks manually from your local machine so the server actually creates the user and trusts the key.
+   Rename the generated `ci_ssh_key.pub` to `ci_user.pub`, place it into `roles/default/files/pub_keys/ci_user.pub`. Then, run the playbooks manually from your local machine (using your personal admin access). This allows Ansible to create the `ci_user` on the server and append the public key to `~/.ssh/authorized_keys`, permitting the pipeline to log in later.
 3. **Encrypt the private key with Ansible Vault:**
    ```bash
    ansible-vault encrypt ci_ssh_key
