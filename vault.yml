@@ -1,0 +1,4 @@
+---
+# Placeholder for vault data.
+# Encrypt this file using: ansible-vault encrypt vault.yml
+# Use this for sensitive variables, passwords, API keys, etc.

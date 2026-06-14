@@ -1,9 +1,4 @@
 ---
-- name: fail2ban start
-  service: name=fail2ban state=started
-
-- name: fail2ban reload
-  service: name=fail2ban state=reloaded
 
 - name: Start Nginx
   service: name=nginx state=started

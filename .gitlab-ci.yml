@@ -1,0 +1,68 @@
+stages:
+  - lint
+  - dry_run
+  - deploy_base
+  - deploy_monitoring
+
+variables:
+  # Disable host key checking for automated pipelines
+  ANSIBLE_HOST_KEY_CHECKING: "False"
+  # Force color output in GitLab UI
+  ANSIBLE_FORCE_COLOR: "True"
+
+default:
+  # Note: You should build the Dockerfile provided in the repository,
+  # push it to your GitLab Container Registry, and update this image path.
+  # Example: registry.gitlab.com/<your-group>/<your-repo>/ansible-runner:latest
+  image: your-custom-ansible-image:latest
+  
+  before_script:
+    - eval $(ssh-agent -s)
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    # Temporarily disable command tracing to hide sensitive operations from logs
+    - set +x
+    - echo "$ANSIBLE_VAULT_PASSWORD" > .vault_pass
+    - ansible-vault decrypt ci_ssh_key --output ~/.ssh/id_rsa --vault-password-file .vault_pass
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-add ~/.ssh/id_rsa > /dev/null
+    # Remove the decrypted key and vault password file immediately after loading into ssh-agent
+    - rm -f .vault_pass ~/.ssh/id_rsa
+
+lint_playbooks:
+  stage: lint
+  script:
+    - ansible-playbook --syntax-check playbooks/def.yml -i inventory
+    - ansible-playbook --syntax-check playbooks/monitoring.yml -i inventory
+
+dry_run_default_services:
+  stage: dry_run
+  script:
+    - ansible-playbook playbooks/def.yml -i inventory --check --diff
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"'
+
+dry_run_monitoring_services:
+  stage: dry_run
+  script:
+    - ansible-playbook playbooks/monitoring.yml -i inventory --check --diff
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"'
+
+deploy_default_services:
+  stage: deploy_base
+  script:
+    # To use vault, append: --vault-password-file .vault_pass
+    - ansible-playbook playbooks/def.yml -i inventory
+  rules:
+    # Only allow deployment from main/master branch, and require manual trigger by DevOps team
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"'
+      when: manual
+
+deploy_monitoring_services:
+  stage: deploy_monitoring
+  script:
+    - ansible-playbook playbooks/monitoring.yml -i inventory
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "main"'
+      when: manual

@@ -1,0 +1,9 @@
+---
+# Optional services configuration
+enable_node_exporter: true
+enable_nginx: true
+enable_sshguard: false 
+enable_cloudflare_zt: false
+
+# Cloudflare Zero Trust Configuration (if enabled)
+# cloudflare_zt_token: "your-token-here"

@@ -1,10 +1,11 @@
 ---
-- hosts: 
+- hosts:
   - all_servers
   become: true
   user: ubuntu
   vars_files:
     - ../config.yml
   roles:
-   - ../roles/default
+   - ../roles/monitoring
+
 

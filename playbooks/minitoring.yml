@@ -1,9 +1,0 @@
----
-- hosts:
-  - all_servers
-  become: true
-  user: ubuntu
-  roles:
-   - ../roles/monitoring
-
-
