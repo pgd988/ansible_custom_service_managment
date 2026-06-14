@@ -48,6 +48,24 @@ This Ansible project is designed to configure Ubuntu Linux Virtual Dedicated Ser
    ansible-playbook playbooks/monitoring.yml -i inventory
    ```
 
+## Docker CI Image
+
+This repository includes a `Dockerfile` specifically designed to be used as the runner environment for your GitLab CI/CD pipeline. It contains a lightweight OS, Ansible, and the necessary SSH utilities.
+
+Before the pipeline can run successfully, you must build this image and push it to your GitLab project's Container Registry so the `.gitlab-ci.yml` jobs can use it.
+
+```bash
+# 1. Login to your GitLab registry
+docker login registry.gitlab.com
+
+# 2. Build the image locally
+docker build -t registry.gitlab.com/<your-group>/<your-repo>/ansible-runner:latest .
+
+# 3. Push the image
+docker push registry.gitlab.com/<your-group>/<your-repo>/ansible-runner:latest
+```
+*(The `.gitlab-ci.yml` is configured to dynamically pull this image using `$CI_REGISTRY_IMAGE/ansible-runner:latest`).*
+
 ## GitLab CI/CD & Vault Setup
 
 To fully automate deployments with the included `.gitlab-ci.yml`, you must securely provide an SSH key to the runner via Ansible Vault:

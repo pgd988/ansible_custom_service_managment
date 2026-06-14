@@ -11,10 +11,9 @@ variables:
   ANSIBLE_FORCE_COLOR: "True"
 
 default:
-  # Note: You should build the Dockerfile provided in the repository,
-  # push it to your GitLab Container Registry, and update this image path.
-  # Example: registry.gitlab.com/<your-group>/<your-repo>/ansible-runner:latest
-  image: your-custom-ansible-image:latest
+  # This uses the Docker image built from the Dockerfile in this repository.
+  # Ensure you have built and pushed it to your GitLab Container Registry.
+  image: $CI_REGISTRY_IMAGE/ansible-runner:latest
   
   before_script:
     - eval $(ssh-agent -s)
