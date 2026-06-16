@@ -2,7 +2,7 @@
 - hosts:
   - all_servers
   become: true
-  user: ubuntu
+  user: gitlab-ci
   vars_files:
     - ../config.yml
   roles:

@@ -1,8 +1,8 @@
 ---
 
 - name: Default service installation
-  include: services.yml
+  include_tasks: services.yml
 
 - name: Users creation
-  include: users.yml
+  include_tasks: users.yml
 

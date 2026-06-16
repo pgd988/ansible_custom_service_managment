@@ -1,5 +1,5 @@
 ---
 
 - name: Default service installation
-  include: services.yml
+  include_tasks: services.yml
 

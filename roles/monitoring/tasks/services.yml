@@ -2,49 +2,50 @@
 - name: Run "apt-get update"
   apt:
     update_cache: yes
-  when: ansible_distribution == "Ubuntu"
+  when: ansible_facts['os_family'] == "Debian"
 
 - name: Prometheus Node Exporter install
-  package: pkg={{ item }} state=installed 
+  package: pkg={{ item }} state=present 
   with_items:
     - prometheus-node-exporter
   when: enable_node_exporter | default(true)
 
 - name: Nginx install
-  package: pkg={{ item }} state=installed 
+  package: pkg={{ item }} state=present 
   with_items:
     - nginx
     - nginx-extras
   when: enable_nginx | default(true)
 
 - name: Docker Install
-  package: pkg={{ item }} state=installed 
+  package: pkg={{ item }} state=present 
   with_items:
     - docker.io
-    - docker-compose
+    - docker-compose-v2
 
 - name: Additional App install
-  package: pkg={{ item }} state=installed 
+  package: pkg={{ item }} state=present 
   with_items:
     - vim
     - wget
     - curl
     - git
+    - net-tools
+    - ssl-cert
+    - mc
 
-- name: Directory for docker-compose servies data creation
+- name: Ensure monitoring project directory exists
   file:
-    path: "/opt/{{ item }}"
+    path: /opt/monitoring
     state: directory
-  with_items:
-    - data/cadvisor
 
 - name: Docker-compose config installation
-  copy: src=docker-compose/docker-compose.yaml dest=/opt/config/docker-compose.yaml
+  copy: src=docker-compose/docker-compose.yaml dest=/opt/monitoring/docker-compose.yaml
 
 - name: Docker-compose starting
-  docker_compose:
-    project_src: /opt/config/
-    build: no
+  community.docker.docker_compose_v2:
+    project_src: /opt/monitoring/
+    build: never
 
 - name: Ensure Nginx is started and enabled
   service:
@@ -52,3 +53,18 @@
     state: started
     enabled: yes
   when: enable_nginx | default(true)
+
+- name: Deploy Nginx configuration for Prometheus Node Exporter
+  template:
+    src: node-exporter.conf.j2
+    dest: /etc/nginx/sites-available/node-exporter
+  when: enable_nginx | default(true) and enable_node_exporter | default(true)
+  notify: restart nginx
+
+- name: Enable Nginx configuration for Prometheus Node Exporter
+  file:
+    src: /etc/nginx/sites-available/node-exporter
+    dest: /etc/nginx/sites-enabled/node-exporter
+    state: link
+  when: enable_nginx | default(true) and enable_node_exporter | default(true)
+  notify: restart nginx

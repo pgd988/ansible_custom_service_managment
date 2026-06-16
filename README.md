@@ -3,7 +3,7 @@
 This Ansible project is designed to configure Ubuntu Linux Virtual Dedicated Servers (VDS). It deploys essential security measures, monitoring stacks, and optional services to ensure the environment is robust and observable.
 
 ## Features
-- **Security**: Disables password authentication, provisions users with SSH public keys, configures UFW firewall, and installs SSHGuard (optional).
+- **Security**: Disables password authentication, provisions users with SSH public keys, and installs SSHGuard (optional).
 - **Monitoring Stack**: Deploys Node Exporter and cAdvisor.
 - **Optional Services**:
   - Nginx
@@ -15,7 +15,7 @@ This Ansible project is designed to configure Ubuntu Linux Virtual Dedicated Ser
 - `inventory`: Your list of target server IPs.
 - `playbooks/`: Ansible playbooks (`def.yml` for default services, `monitoring.yml` for the monitoring stack).
 - `roles/`:
-  - `default`: Core security and base configuration (UFW, users, SSHGuard, etc.).
+  - `default`: Core security and base configuration (users, SSHGuard, etc.).
   - `monitoring`: Docker-based monitoring stack (Prometheus, Grafana, cAdvisor).
 - `vault.yml`: A placeholder file for any encrypted private data using `ansible-vault`.
 

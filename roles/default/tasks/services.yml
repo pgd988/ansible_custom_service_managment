@@ -1,5 +1,10 @@
 ---
 
+- name: Run "apt-get update"
+  apt:
+    update_cache: yes
+  when: ansible_facts['os_family'] == "Debian"
+
 - name: Disable Password Authentication
   lineinfile: 
     path: /etc/ssh/sshd_config
@@ -19,35 +24,18 @@
   notify: restart ssh
 
 - name: Additional App install
-  package: pkg={{ item }} state=installed 
+  package: pkg={{ item }} state=present 
   with_items:
     - vim
     - wget
     - curl
     - git
-    - ufw
+    - sudo
 
-- name: Configure UFW default deny
-  ufw:
-    state: enabled
-    policy: deny
 
-- name: Configure UFW allow ports
-  ufw:
-    rule: allow
-    port: '{{ item }}'
-    proto: tcp
-  with_items:
-    - '22'
-    - '53'
-    - '443'
-
-- name: Configure UFW allow ICMP (already allowed by default in UFW, but ensuring UFW is active)
-  ufw:
-    state: enabled
 
 - name: Install SSHGuard
-  package: pkg=sshguard state=installed
+  package: pkg=sshguard state=present
   become: true
   when: enable_sshguard | default(false)
 
@@ -55,9 +43,6 @@
   service: name=sshguard state=started enabled=yes
   when: enable_sshguard | default(false)
 
-- name: Prometheus Node Exporter install
-  package: pkg=prometheus-node-exporter state=installed 
-  when: enable_node_exporter | default(true)
 
 - name: Install Cloudflare Zero Trust agent
   apt:

@@ -1,7 +1,5 @@
 [all_servers]
-10.0.0.1
+34.42.219.189
 
-
-
-
-
+[all_servers:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=accept-new'

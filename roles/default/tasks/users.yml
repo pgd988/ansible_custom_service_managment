@@ -1,5 +1,18 @@
 ---
-- include_vars: roles/default/vars/users_list.yaml
+- include_vars: users_list.yaml
+
+- name: Ensure sudo group exists
+  group:
+    name: sudo
+    state: present
+
+- name: Allow 'sudo' group to have passwordless sudo
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%sudo'
+    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
 
 #- name: DEBUG 
 #  debug:
@@ -10,12 +23,12 @@
 #  become: yes
 
 - name: User creation with home dir, shell and groups adding
-  user: name={{ item.username }} shell=/bin/bash uid={{ item.uid }} createhome=yes password={{ random_pass }} comment="" state=present
+  user: name={{ item.username }} shell=/bin/bash uid={{ item.uid }} createhome=yes password="{{ random_pass | password_hash('sha512') }}" comment="" state=present
   with_items: '{{ users }}'
-  when: ( item.active == True and item.admin !== True )
+  when: ( item.active == True and item.admin != True )
 
-- name: User creation with home dir, shell and groups adding
-  user: name={{ item.username }} shell=/bin/bash uid={{ item.uid }} createhome=yes password={{ random_pass }} comment="" state=present group="sudo"
+- name: Admin user creation with home dir, shell and groups adding
+  user: name={{ item.username }} shell=/bin/bash uid={{ item.uid }} createhome=yes password="{{ random_pass | password_hash('sha512') }}" comment="" state=present group="sudo"
   with_items: '{{ users }}'
   when: ( item.active == True and item.admin == True )
 
@@ -23,15 +36,15 @@
   file:
     path: '/home/{{ item.username }}/.ssh'
     state: directory
-    mode: 0700
-  state: present
+    mode: '0700'
   with_items: '{{ users }}'
   when: ( item.active == True )
 
 - name: Auth key adding
-  authorized_key: user={{ item.username }}
-   key="{{ lookup('file', 'roles/default/files/pub_keys/{{ item.username }}.pub') }}"
-  state: present
+  authorized_key:
+    user: "{{ item.username }}"
+    key: "{{ lookup('file', 'pub_keys/' ~ item.username ~ '.pub') }}"
+    state: present
   with_items: '{{ users }}'
   when: ( item.active == True )
 

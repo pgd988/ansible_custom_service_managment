@@ -1,17 +1,17 @@
 ---
 users:
   - username: example1
-    use_sudo: true
+    admin: true
     uid: 1519
     active: False
 
   - username: example2
-    use_sudo: false
+    admin: false
     uid: 1520
     active: False #Set False to remove users from remote server.
 
   - username: ci_user
-    use_sudo: true
+    admin: true
     uid: 1521
     active: True
 #root_pass: !vault |

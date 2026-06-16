@@ -1,1 +1,33 @@
-.retry
+# Ansible
+*.retry
+
+# Virtual Environments
+venv/
+env/
+.venv/
+.env
+
+# Vault Passwords
+.vault_pass
+.vault_pass.txt
+vault_pass.txt
+.vault-pass
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+.ssh/
+ansible.cfg
